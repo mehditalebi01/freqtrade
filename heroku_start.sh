@@ -25,6 +25,12 @@ fi
 echo "Starting Freqtrade on port ${PORT}..."
 echo "Database: ${DB_URL%%@*}@***"
 
+# Override API server port via environment variable
+# Freqtrade reads FREQTRADE__<section>__<key> env vars as config overrides
+export FREQTRADE__API_SERVER__LISTEN_PORT="${PORT}"
+export FREQTRADE__API_SERVER__LISTEN_IP_ADDRESS="0.0.0.0"
+export FREQTRADE__API_SERVER__ENABLED="true"
+
 # Launch Freqtrade in trade mode
 exec freqtrade trade \
     --logfile /freqtrade/user_data/logs/freqtrade.log \
