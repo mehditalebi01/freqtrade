@@ -54,11 +54,11 @@ class MultiIndicatorStrategy(IStrategy):
     Entry (Long):
         1. EMA 9 crosses above EMA 21 (golden cross)
         2. Price above EMA 50 (medium-term uptrend)
-        3. RSI between 30-65 (not overbought, room to run)
+        3. RSI between 25-70 (not overbought, room to run)
         4. MACD histogram positive (bullish momentum)
-        5. Price near or below BB middle (not overextended)
-        6. ADX > 20 (trend has strength)
-        7. Volume > 1.2x average (smart money confirmation)
+        5. ADX > 20 (trend has strength)
+        6. Volume above average (confirmation)
+        7. Higher TF confirmation (1h EMA50 + RSI)
 
     Exit (Long):
         1. EMA 9 crosses below EMA 21 (death cross)
@@ -114,8 +114,8 @@ class MultiIndicatorStrategy(IStrategy):
     # ---- Hyperoptable Parameters ----
 
     # Entry RSI thresholds
-    buy_rsi_low = IntParameter(low=20, high=40, default=30, space="buy", optimize=True, load=True)
-    buy_rsi_high = IntParameter(low=55, high=75, default=65, space="buy", optimize=True, load=True)
+    buy_rsi_low = IntParameter(low=15, high=35, default=25, space="buy", optimize=True, load=True)
+    buy_rsi_high = IntParameter(low=60, high=80, default=70, space="buy", optimize=True, load=True)
 
     # Exit RSI threshold
     sell_rsi = IntParameter(low=60, high=80, default=70, space="sell", optimize=True, load=True)
@@ -125,7 +125,7 @@ class MultiIndicatorStrategy(IStrategy):
 
     # Volume multiplier
     buy_volume_mult = DecimalParameter(
-        low=1.0, high=2.0, default=1.2, decimals=1, space="buy", optimize=True, load=True
+        low=0.8, high=2.0, default=1.0, decimals=1, space="buy", optimize=True, load=True
     )
 
     # Optional order type mapping
@@ -236,10 +236,9 @@ class MultiIndicatorStrategy(IStrategy):
         2. Price is above EMA 50 (medium-term uptrend)
         3. RSI is in the buy zone (not overbought)
         4. MACD histogram is positive (bullish momentum)
-        5. Price is near or below BB middle band (not overextended)
-        6. ADX > threshold (trend has strength, avoid chop)
-        7. Volume is above average (smart money confirmation)
-        8. Higher TF confirmation: price above 1h EMA 50
+        5. ADX > threshold (trend has strength, avoid chop)
+        6. Volume is above average (confirmation)
+        7. Higher TF confirmation: price above 1h EMA 50 + RSI < 70
         """
         conditions_long = (
             # Signal: EMA 9 crosses above EMA 21 (golden cross)
@@ -251,11 +250,9 @@ class MultiIndicatorStrategy(IStrategy):
             & (dataframe["rsi"] < self.buy_rsi_high.value)
             # Guard: MACD histogram positive (bullish momentum)
             & (dataframe["macdhist"] > 0)
-            # Guard: Price near or below BB middle (not overextended)
-            & (dataframe["close"] <= dataframe["bb_middleband"])
             # Guard: ADX above threshold (trend has strength)
             & (dataframe["adx"] > self.buy_adx.value)
-            # Guard: Volume above average (smart money)
+            # Guard: Volume above average
             & (dataframe["volume"] > (dataframe["volume_sma"] * self.buy_volume_mult.value))
             # Guard: Higher timeframe confirmation (price above 1h EMA 50)
             & (dataframe["close"] > dataframe["ema50_1h"])
