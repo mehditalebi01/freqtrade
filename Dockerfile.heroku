@@ -37,7 +37,8 @@ COPY requirements.txt requirements-hyperopt.txt ./
 RUN pip install --upgrade pip wheel \
     && pip install --prefix=/install --no-cache-dir "numpy<3.0" \
     && pip install --prefix=/install --no-cache-dir -r requirements.txt \
-    && pip install --prefix=/install --no-cache-dir -r requirements-hyperopt.txt
+    && pip install --prefix=/install --no-cache-dir -r requirements-hyperopt.txt \
+    && pip install --prefix=/install --no-cache-dir psycopg2-binary
 
 ##############################################
 # Stage 2: Runtime image
