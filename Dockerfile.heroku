@@ -1,0 +1,89 @@
+##############################################
+# Stage 1: Build dependencies & TA-Lib
+##############################################
+FROM python:3.12-slim-bookworm AS builder
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install build tools
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libssl-dev \
+    libffi-dev \
+    libgfortran5 \
+    pkg-config \
+    cmake \
+    gcc \
+    git \
+    curl \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# Build TA-Lib from source
+RUN wget -q http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz \
+    && tar -xzf ta-lib-0.4.0-src.tar.gz \
+    && cd ta-lib/ \
+    && sed -i.bak "s|0.00000001|0.000000000000000001 |g" src/ta_func/ta_utility.h \
+    && ./configure --prefix=/usr/local \
+    && make -j$(nproc) \
+    && make install \
+    && cd .. \
+    && rm -rf ta-lib ta-lib-0.4.0-src.tar.gz
+
+# Install Python dependencies
+WORKDIR /build
+COPY requirements.txt requirements-hyperopt.txt ./
+
+RUN pip install --upgrade pip wheel \
+    && pip install --prefix=/install --no-cache-dir "numpy<3.0" \
+    && pip install --prefix=/install --no-cache-dir -r requirements.txt \
+    && pip install --prefix=/install --no-cache-dir -r requirements-hyperopt.txt
+
+##############################################
+# Stage 2: Runtime image
+##############################################
+FROM python:3.12-slim-bookworm AS runtime
+
+ENV LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONFAULTHANDLER=1 \
+    FT_APP_ENV="docker"
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libatlas3-base \
+    curl \
+    libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy TA-Lib shared libraries
+COPY --from=builder /usr/local/lib/libta_lib* /usr/local/lib/
+COPY --from=builder /usr/local/include/ta-lib /usr/local/include/ta-lib
+RUN ldconfig
+
+# Copy Python packages
+COPY --from=builder /install /usr/local
+
+# Create non-root user
+RUN useradd -u 1000 -m -s /bin/bash ftuser
+
+# Set up working directory
+WORKDIR /freqtrade
+COPY --chown=ftuser:ftuser . /freqtrade/
+
+# Install freqtrade + FreqUI
+RUN pip install -e . --no-cache-dir \
+    && mkdir -p /freqtrade/user_data/strategies \
+    && mkdir -p /freqtrade/user_data/logs \
+    && chown -R ftuser:ftuser /freqtrade \
+    && freqtrade install-ui
+
+# Copy startup script
+COPY --chown=ftuser:ftuser heroku_start.sh /freqtrade/heroku_start.sh
+RUN chmod +x /freqtrade/heroku_start.sh
+
+USER ftuser
+
+# Heroku assigns PORT dynamically — do NOT set EXPOSE
+CMD ["/freqtrade/heroku_start.sh"]
