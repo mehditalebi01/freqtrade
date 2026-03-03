@@ -79,9 +79,9 @@ RUN pip install -e . --no-cache-dir \
     && chown -R ftuser:ftuser /freqtrade \
     && freqtrade install-ui
 
-# Copy startup script
+# Copy startup script and fix Windows line endings
 COPY --chown=ftuser:ftuser heroku_start.sh /freqtrade/heroku_start.sh
-RUN chmod +x /freqtrade/heroku_start.sh
+RUN sed -i 's/\r$//' /freqtrade/heroku_start.sh && chmod +x /freqtrade/heroku_start.sh
 
 USER ftuser
 
