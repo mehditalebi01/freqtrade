@@ -16,9 +16,10 @@ freqtrade.service
 freqtrade.egg-info
 .venv/
 
-config.json*
+config.json
 *.sqlite
-user_data/
+user_data/logs/
+user_data/*.sqlite
 *.log
 
 .vscode
