@@ -30,4 +30,4 @@ exec freqtrade trade \
     --logfile /freqtrade/user_data/logs/freqtrade.log \
     --db-url "${DB_URL}" \
     --config /freqtrade/user_data/config.json \
-    --strategy SampleStrategy
+    --strategy MultiIndicatorStrategy
