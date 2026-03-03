@@ -20,10 +20,10 @@ A complete guide to deploying the Freqtrade crypto trading bot on Heroku using D
 heroku login
 
 # Create a new app (choose a unique name)
-heroku create your-freqtrade-bot
+heroku create freqtrade
 
 # Set the stack to container (required for Docker deployments)
-heroku stack:set container -a your-freqtrade-bot
+heroku stack:set container -a freqtrade
 ```
 
 ## Step 2: Add Heroku Postgres
@@ -32,7 +32,7 @@ Heroku's filesystem is **ephemeral** — SQLite data is lost on dyno restart. Us
 
 ```bash
 # Add the free mini Postgres plan
-heroku addons:create heroku-postgresql:essential-0 -a your-freqtrade-bot
+heroku addons:create heroku-postgresql:essential-0 -a freqtrade
 ```
 
 This automatically sets the `DATABASE_URL` config var. The `heroku_start.sh` script handles format conversion.
@@ -58,21 +58,21 @@ Use Heroku config vars to inject sensitive data via Freqtrade's `FREQTRADE__` en
 
 ```bash
 # Exchange credentials
-heroku config:set FREQTRADE__EXCHANGE__KEY="your_exchange_api_key" -a your-freqtrade-bot
-heroku config:set FREQTRADE__EXCHANGE__SECRET="your_exchange_api_secret" -a your-freqtrade-bot
+heroku config:set FREQTRADE__EXCHANGE__KEY="your_exchange_api_key" -a freqtrade
+heroku config:set FREQTRADE__EXCHANGE__SECRET="your_exchange_api_secret" -a freqtrade
 
 # API server credentials (change these!)
-heroku config:set FREQTRADE__API_SERVER__USERNAME="your_username" -a your-freqtrade-bot
-heroku config:set FREQTRADE__API_SERVER__PASSWORD="YourStr0ngP@ssword" -a your-freqtrade-bot
-heroku config:set FREQTRADE__API_SERVER__JWT_SECRET_KEY="$(openssl rand -hex 32)" -a your-freqtrade-bot
+heroku config:set FREQTRADE__API_SERVER__USERNAME="your_username" -a freqtrade
+heroku config:set FREQTRADE__API_SERVER__PASSWORD="YourStr0ngP@ssword" -a freqtrade
+heroku config:set FREQTRADE__API_SERVER__JWT_SECRET_KEY="$(openssl rand -hex 32)" -a freqtrade
 
 # Optional: Telegram integration
-heroku config:set FREQTRADE__TELEGRAM__ENABLED=true -a your-freqtrade-bot
-heroku config:set FREQTRADE__TELEGRAM__TOKEN="your_telegram_bot_token" -a your-freqtrade-bot
-heroku config:set FREQTRADE__TELEGRAM__CHAT_ID="your_telegram_chat_id" -a your-freqtrade-bot
+heroku config:set FREQTRADE__TELEGRAM__ENABLED=true -a freqtrade
+heroku config:set FREQTRADE__TELEGRAM__TOKEN="your_telegram_bot_token" -a freqtrade
+heroku config:set FREQTRADE__TELEGRAM__CHAT_ID="your_telegram_chat_id" -a freqtrade
 
 # Optional: Switch to live trading (default is dry_run)
-# heroku config:set FREQTRADE__DRY_RUN=false -a your-freqtrade-bot
+# heroku config:set FREQTRADE__DRY_RUN=false -a freqtrade
 ```
 
 ## Step 5: Add Your Strategy
@@ -98,7 +98,7 @@ git commit -m "Add custom trading strategy"
 
 ```bash
 # Add Heroku remote (if not done automatically)
-heroku git:remote -a your-freqtrade-bot
+heroku git:remote -a freqtrade
 
 # Deploy
 git push heroku main
@@ -114,28 +114,28 @@ git push heroku main
 
 ```bash
 # Check logs
-heroku logs --tail -a your-freqtrade-bot
+heroku logs --tail -a freqtrade
 
 # Check if the API is responding
-curl https://your-freqtrade-bot-xxxx.herokuapp.com/api/v1/ping
+curl https://freqtrade-xxxx.herokuapp.com/api/v1/ping
 # Expected: {"status":"pong"}
 ```
 
-Access the **FreqUI** web interface at your app's URL (e.g., `https://your-freqtrade-bot-xxxx.herokuapp.com`).
+Access the **FreqUI** web interface at your app's URL (e.g., `https://freqtrade-xxxx.herokuapp.com`).
 
 ## Step 8: Scale the Dyno
 
 ```bash
 # Ensure at least 1 web dyno is running
-heroku ps:scale web=1 -a your-freqtrade-bot
+heroku ps:scale web=1 -a freqtrade
 
 # Check dyno status
-heroku ps -a your-freqtrade-bot
+heroku ps -a freqtrade
 
 # Upgrade dyno for 24/7 uptime (recommended)
-heroku ps:type web=basic -a your-freqtrade-bot
+heroku ps:type web=basic -a freqtrade
 # Or for better performance:
-# heroku ps:type web=standard-1x -a your-freqtrade-bot
+# heroku ps:type web=standard-1x -a freqtrade
 ```
 
 ---
@@ -166,9 +166,9 @@ heroku ps:type web=basic -a your-freqtrade-bot
 TA-Lib is compiled from source in the Dockerfile. If the build runs out of memory, you may need to use a `performance-m` dyno for the build:
 
 ```bash
-heroku ps:type web=performance-m -a your-freqtrade-bot && git push heroku main
+heroku ps:type web=performance-m -a freqtrade && git push heroku main
 # then scale back down after build:
-heroku ps:type web=basic -a your-freqtrade-bot
+heroku ps:type web=basic -a freqtrade
 ```
 
 ### App crashes on startup
@@ -176,7 +176,7 @@ heroku ps:type web=basic -a your-freqtrade-bot
 Check the logs:
 
 ```bash
-heroku logs --tail -a your-freqtrade-bot
+heroku logs --tail -a freqtrade
 ```
 
 Common causes:
@@ -190,8 +190,8 @@ Common causes:
 Heroku rotates database credentials periodically. The `DATABASE_URL` is automatically updated, but if you see connection errors:
 
 ```bash
-heroku pg:credentials:rotate -a your-freqtrade-bot
-heroku restart -a your-freqtrade-bot
+heroku pg:credentials:rotate -a freqtrade
+heroku restart -a freqtrade
 ```
 
 ### Dyno sleeps / bot stops trading
@@ -199,7 +199,7 @@ heroku restart -a your-freqtrade-bot
 Eco and free dynos sleep after 30 minutes of inactivity. Upgrade to **Basic** ($7/mo) or higher:
 
 ```bash
-heroku ps:type web=basic -a your-freqtrade-bot
+heroku ps:type web=basic -a freqtrade
 ```
 
 ---
