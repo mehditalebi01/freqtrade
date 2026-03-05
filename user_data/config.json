@@ -1,6 +1,6 @@
 {
     "$schema": "https://schema.freqtrade.io/schema.json",
-    "max_open_trades": 5,
+    "max_open_trades": 3,
     "stake_currency": "USDT",
     "stake_amount": "unlimited",
     "tradable_balance_ratio": 0.95,
@@ -10,8 +10,8 @@
     "cancel_open_orders_on_exit": false,
     "timeframe": "5m",
     "trailing_stop": true,
-    "trailing_stop_positive": 0.01,
-    "trailing_stop_positive_offset": 0.02,
+    "trailing_stop_positive": 0.005,
+    "trailing_stop_positive_offset": 0.015,
     "trailing_only_offset_is_reached": true,
     "use_exit_signal": true,
     "exit_profit_only": false,
@@ -20,12 +20,11 @@
     "ignore_buying_expired_candle_after": 300,
     "trading_mode": "spot",
     "minimal_roi": {
-        "120": 0.01,
         "60": 0.02,
-        "30": 0.04,
-        "0": 0.08
+        "30": 0.03,
+        "0": 0.04
     },
-    "stoploss": -0.08,
+    "stoploss": -0.05,
     "unfilledtimeout": {
         "entry": 10,
         "exit": 10,
@@ -66,7 +65,7 @@
     "pairlists": [
         {
             "method": "VolumePairList",
-            "number_assets": 20,
+            "number_assets": 10,
             "sort_key": "quoteVolume",
             "min_value": 10000,
             "refresh_period": 1800
@@ -126,13 +125,13 @@
         "username": "freqtrader",
         "password": "SuperSecurePassword"
     },
-    "bot_name": "freqtrade-heroku",
+    "bot_name": "freqtrade-enhanced",
     "initial_state": "running",
     "force_entry_enable": false,
     "internals": {
         "process_throttle_secs": 5,
         "heartbeat_interval": 60
     },
-    "strategy": "MultiIndicatorStrategy",
+    "strategy": "EnhancedMultiIndicatorStrategy",
     "strategy_path": "user_data/strategies/"
 }

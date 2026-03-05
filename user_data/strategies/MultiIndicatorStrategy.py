@@ -52,13 +52,14 @@ class MultiIndicatorStrategy(IStrategy):
         - Volume SMA (20): Volume confirmation
 
     Entry (Long):
-        1. EMA 9 crosses above EMA 21 (golden cross)
-        2. Price above EMA 50 (medium-term uptrend)
-        3. RSI between 25-70 (not overbought, room to run)
-        4. MACD histogram positive (bullish momentum)
-        5. ADX > 20 (trend has strength)
-        6. Volume above average (confirmation)
-        7. Higher TF confirmation (1h EMA50 + RSI)
+        1. MARKET REGIME: 1h EMA50 > 1h EMA200 (bull market only)
+        2. EMA 9 crosses above EMA 21 (golden cross)
+        3. Price above EMA 50 (medium-term uptrend)
+        4. RSI between 25-70 (not overbought, room to run)
+        5. MACD histogram positive (bullish momentum)
+        6. ADX > 20 (trend has strength)
+        7. Volume above average (confirmation)
+        8. 1h RSI < 70 (not overbought on higher TF)
 
     Exit (Long):
         1. EMA 9 crosses below EMA 21 (death cross)
@@ -66,9 +67,9 @@ class MultiIndicatorStrategy(IStrategy):
         3. Price above BB upper + RSI > 65 (overextended)
 
     Risk Management:
-        - Hard stoploss: -8%
-        - Time-based custom stoploss (tightens over time)
-        - Trailing stop after 2% profit
+        - Hard stoploss: -5%
+        - Profit-aware custom stoploss
+        - Trailing stop after 1.5% profit
     """
 
     # Strategy interface version
@@ -79,23 +80,23 @@ class MultiIndicatorStrategy(IStrategy):
 
     # Minimal ROI designed for the strategy
     minimal_roi = {
-        "120": 0.01,   # 1% after 2 hours
-        "60": 0.02,    # 2% after 1 hour
-        "30": 0.04,    # 4% after 30 minutes
-        "0": 0.08,     # 8% immediately
+        "90": 0.005,   # 0.5% after 90 minutes
+        "60": 0.01,    # 1% after 1 hour
+        "30": 0.02,    # 2% after 30 minutes
+        "0": 0.04,     # 4% immediately
     }
 
-    # Optimal stoploss
-    stoploss = -0.08
+    # Optimal stoploss (tighter to limit losses)
+    stoploss = -0.05
 
     # Trailing stoploss (activated after offset is reached)
     trailing_stop = True
-    trailing_stop_positive = 0.01
-    trailing_stop_positive_offset = 0.02
+    trailing_stop_positive = 0.008
+    trailing_stop_positive_offset = 0.015
     trailing_only_offset_is_reached = True
 
-    # Optimal timeframe
-    timeframe = "5m"
+    # 15m timeframe (less noise than 5m)
+    timeframe = "15m"
 
     # Run "populate_indicators()" only for new candle
     process_only_new_candles = True
@@ -175,11 +176,12 @@ class MultiIndicatorStrategy(IStrategy):
     @informative("1h")
     def populate_indicators_1h(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         """
-        1-hour timeframe indicators for trend confirmation.
-        Only enter trades when the higher timeframe also shows bullish conditions.
+        1-hour timeframe indicators for trend confirmation and market regime.
+        Only enter trades when the higher timeframe shows bullish conditions.
         """
-        # EMA 50 on 1h for macro trend
+        # EMA 50 & 200 on 1h for market regime detection
         dataframe["ema50"] = ta.EMA(dataframe, timeperiod=50)
+        dataframe["ema200"] = ta.EMA(dataframe, timeperiod=200)
 
         # RSI on 1h to avoid buying into overbought conditions
         dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
@@ -241,8 +243,10 @@ class MultiIndicatorStrategy(IStrategy):
         7. Higher TF confirmation: price above 1h EMA 50 + RSI < 70
         """
         conditions_long = (
+            # MARKET REGIME: Only trade in bull market (1h EMA50 > 1h EMA200)
+            (dataframe["ema50_1h"] > dataframe["ema200_1h"])
             # Signal: EMA 9 crosses above EMA 21 (golden cross)
-            (qtpylib.crossed_above(dataframe["ema9"], dataframe["ema21"]))
+            & (qtpylib.crossed_above(dataframe["ema9"], dataframe["ema21"]))
             # Guard: Price above EMA 50 (medium-term uptrend)
             & (dataframe["close"] > dataframe["ema50"])
             # Guard: RSI in buy zone (not overbought, has room to run)
@@ -254,7 +258,7 @@ class MultiIndicatorStrategy(IStrategy):
             & (dataframe["adx"] > self.buy_adx.value)
             # Guard: Volume above average
             & (dataframe["volume"] > (dataframe["volume_sma"] * self.buy_volume_mult.value))
-            # Guard: Higher timeframe confirmation (price above 1h EMA 50)
+            # Guard: Price above 1h EMA 50
             & (dataframe["close"] > dataframe["ema50_1h"])
             # Guard: 1h RSI not overbought
             & (dataframe["rsi_1h"] < 70)
@@ -317,22 +321,24 @@ class MultiIndicatorStrategy(IStrategy):
         **kwargs,
     ) -> float | None:
         """
-        Custom time-based stoploss that tightens over time.
+        Profit-aware custom stoploss.
 
-        - First 60 minutes: Use initial stoploss (-8%) to give trade room
-        - 60-120 minutes: Tighten to -5% trailing
-        - After 120 minutes: Tighten to -3% trailing (close stale trades faster)
-
-        This prevents sitting in trades that aren't moving while allowing
-        winning trades time to develop.
+        - In profit > 2%: tight 1.5% trailing (lock in gains)
+        - In profit 0-2%: 3% trailing (protect small gains)
+        - In loss after 4 hours: cut at -4% (don't hold losers)
+        - First 4 hours in loss: let initial -8% stoploss handle
         """
-        # After 2 hours, use tight 3% trailing stoploss
-        if current_time - timedelta(minutes=120) > trade.open_date_utc:
+        # If in good profit, protect it
+        if current_profit > 0.02:
+            return -0.015
+
+        # If in small profit, moderate trailing
+        if current_profit > 0:
             return -0.03
 
-        # After 1 hour, use 5% trailing stoploss
-        if current_time - timedelta(minutes=60) > trade.open_date_utc:
-            return -0.05
+        # After 4 hours in loss, tighten to -4%
+        if current_time - timedelta(minutes=240) > trade.open_date_utc:
+            return -0.04
 
-        # First hour: let the initial stoploss handle it
+        # First 4 hours: let initial stoploss handle it
         return None
