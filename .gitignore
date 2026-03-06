@@ -115,6 +115,7 @@ target/
 !config_examples/config_freqai.example.json
 !user_data/config.json
 !user_data/enhanced_config.json
+!user_data/backtest_config.json
 !user_data/strategies/
 !user_data/strategies/**
 

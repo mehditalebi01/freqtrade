@@ -66,7 +66,7 @@ class EnhancedMultiIndicatorStrategy(IStrategy):
     ignore_roi_if_entry_signal = False
     use_custom_stoploss = True
 
-    startup_candle_count: int = 200
+    startup_candle_count: int = 2500  # ~8.7 days of 5m candles, enough for 1h EMA200
 
     # Hyperopt parameters
     from freqtrade.strategy import IntParameter, DecimalParameter
