@@ -73,7 +73,6 @@
   },
   "stoploss": -0.337,
   "trailing_stop": false,
-  "use_exit_signal": true,
   "exit_profit_only": false,
   "exit_profit_offset": 0.0,
   "ignore_roi_if_entry_signal": false,

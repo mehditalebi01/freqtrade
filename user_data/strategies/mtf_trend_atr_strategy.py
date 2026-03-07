@@ -117,19 +117,19 @@ class MTFTrendATRStrategy(IStrategy):
     def populate_entry_trend(self, dataframe: pd.DataFrame, metadata: dict) -> pd.DataFrame:
         if dataframe.empty: return dataframe
 
+        volume_ma = dataframe['volume'].rolling(window=self.volume_ma_period).mean()
+
         lc = []
         lc.append(dataframe['ema_fast_1h'] > dataframe['ema_slow_1h'])
         lc.append(dataframe['close'] > dataframe['ema_slow_1h'])
         lc.append(dataframe['rsi_1h'] > 50)
+        lc.append(dataframe['adx_1h'] > 25)  # Strict trending requirement for longs in a bear market
         lc.append(qtpylib.crossed_above(dataframe['ema_fast'], dataframe['ema_slow']))
         lc.append(dataframe['rsi'] > self.entry_rsi_long_low.value)
         lc.append(dataframe['rsi'] < self.rsi_high_long)
         lc.append(dataframe['adx'] > self.entry_adx.value)
         lc.append(dataframe['macd_hist'] > 0)
         lc.append(dataframe['bb_width'] > self.entry_bb_width.value)
-        
-        # Volume moving average was generating SettingWithCopyWarning, safer inline logic
-        volume_ma = dataframe['volume'].rolling(window=self.volume_ma_period).mean()
         lc.append(dataframe['volume'] > (volume_ma * self.entry_volume_mult.value))
         dataframe.loc[reduce(lambda a, b: a & b, lc), 'enter_long'] = 1
 
