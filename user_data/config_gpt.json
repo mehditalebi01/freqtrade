@@ -66,28 +66,6 @@
   "pair_whitelist": [],
   "pair_blacklist": [".*(BEAR|BULL|UP|DOWN|3L|3S)"] ,
 
-  "protections": [
-    {
-      "method": "CooldownPeriod",
-      "stop_duration_candles": 24
-    },
-    {
-      "method": "MaxDrawdown",
-      "lookback_period_candles": 720,
-      "trade_limit": 1,
-      "stop_duration_candles": 1440,
-      "max_drawdown": 0.25
-    },
-    {
-      "method": "StoplossGuard",
-      "lookback_period_candles": 288,
-      "trade_limit": 1,
-      "stop_duration_candles": 720,
-      "max_stoploss": 0.10,
-      "skip_duration": 240
-    }
-  ],
-
   "telegram": {
     "enabled": false
   },
