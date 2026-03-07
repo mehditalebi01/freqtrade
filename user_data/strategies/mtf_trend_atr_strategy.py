@@ -125,6 +125,19 @@ class MTFTrendATRStrategy(IStrategy):
     bb_width_thresh: float = 0.004  # 0.4 % width threshold
     atr_stop_mult: float = 2.5      # ATR multiple for dynamic stop
 
+    # Strategy level settings (2026 API changes)
+    # Use exit (sell) signals to close positions.  See migration docs for
+    # details【621783652194922†L609-L627】.
+    use_exit_signal: bool = True
+    # Only sell when exit signal is profitable (enforce minimal ROI).  This
+    # prevents taking small profits prematurely.
+    exit_profit_only: bool = True
+    # Offset for exit profit detection; 1% ensures some buffer before exiting.
+    exit_profit_offset: float = 0.01
+    # Do not ignore ROI when there is a new entry signal.  We want to respect
+    # minimal ROI before re‑entering.
+    ignore_roi_if_entry_signal: bool = False
+
     @informative('1h')
     def populate_indicators_1h(self, dataframe: pd.DataFrame, metadata: dict) -> pd.DataFrame:
         """Compute indicators on the 1‑hour informative timeframe.
@@ -237,6 +250,7 @@ class MTFTrendATRStrategy(IStrategy):
         current_time: datetime,
         current_rate: float,
         current_profit: float,
+        after_fill: bool,
         **kwargs,
     ) -> float:
         """Dynamic stoploss based on Average True Range (ATR).
@@ -247,6 +261,10 @@ class MTFTrendATRStrategy(IStrategy):
         recalculated on every candle, but the returned value is relative
         to the trade’s open rate.  We clamp the result to the base
         stoploss (−10 %) to avoid extreme values.
+
+        The signature follows the 2026 strategy API which includes the
+        `after_fill` flag and passes through **kwargs for future
+        compatibility【302305496289280†L620-L654】.
         """
         # Retrieve analyzed dataframe for current pair and timeframe
         dataframe, _ = self.dp.get_analyzed_dataframe(pair=pair, timeframe=self.timeframe)
