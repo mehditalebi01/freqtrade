@@ -1,0 +1,61 @@
+Columns for ADA/USDT: ['date', 'open', 'high', 'low', 'close', 'volume', 'open_count', 'high_count', 'low_count', 'close_count', 'max_count', 'date_1h', 'open_1h', 'high_1h', 'low_1h', 'close_1h', 'volume_1h', 'ema_50_1h', 'ema_200_1h', 'adx_1h', 'rsi_1h', 'ema_9', 'ema_20', 'ema_50', 'rsi', 'mfi', 'cci', 'adx', 'bb_lower', 'bb_mid', 'bb_upper', 'atr_pct', 'vol_mean_24', 'pullback_ok', 'scalp_confirm', 'volatility_ok', 'trend_ok', 'enter_tag']
+
+BTC/USDT Stats:
+trend_ok: 75983
+volatility_ok: 149
+pullback_ok: 5180
+scalp_confirm: 16255
+close_1h > ema_200_1h: 33662
+ema_50_1h >= ema_200_1h: 33696
+adx_1h > 18: 62570
+All combined matches: 0
+
+ETH/USDT Stats:
+trend_ok: 72879
+volatility_ok: 628
+pullback_ok: 4876
+scalp_confirm: 15708
+close_1h > ema_200_1h: 34454
+ema_50_1h >= ema_200_1h: 33468
+adx_1h > 18: 63242
+All combined matches: 0
+
+SOL/USDT Stats:
+trend_ok: 71335
+volatility_ok: 895
+pullback_ok: 5467
+scalp_confirm: 16447
+close_1h > ema_200_1h: 35018
+ema_50_1h >= ema_200_1h: 34980
+adx_1h > 18: 62678
+All combined matches: 0
+
+BNB/USDT Stats:
+trend_ok: 5976
+volatility_ok: 0
+pullback_ok: 504
+scalp_confirm: 1204
+close_1h > ema_200_1h: 1094
+ema_50_1h >= ema_200_1h: 864
+adx_1h > 18: 4359
+All combined matches: 0
+
+XRP/USDT Stats:
+trend_ok: 72744
+volatility_ok: 829
+pullback_ok: 5348
+scalp_confirm: 16425
+close_1h > ema_200_1h: 28728
+ema_50_1h >= ema_200_1h: 27048
+adx_1h > 18: 60422
+All combined matches: 0
+
+ADA/USDT Stats:
+trend_ok: 70745
+volatility_ok: 1096
+pullback_ok: 5265
+scalp_confirm: 15466
+close_1h > ema_200_1h: 26942
+ema_50_1h >= ema_200_1h: 26736
+adx_1h > 18: 59378
+All combined matches: 0

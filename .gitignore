@@ -117,6 +117,9 @@ target/
 !user_data/enhanced_config.json
 !user_data/backtest_config.json
 !user_data/config_gpt.json
+!user_data/config1.json
+!user_data/config_trendfollow.json
+!user_data/config_nfi_futures.json
 !user_data/strategies/
 !user_data/strategies/**
 !user_data/data/

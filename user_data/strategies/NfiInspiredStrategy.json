@@ -1,0 +1,41 @@
+{
+  "strategy_name": "NfiInspiredStrategy",
+  "params": {
+    "max_open_trades": {
+      "max_open_trades": 3
+    },
+    "buy": {
+      "buy_bb_delta": 0.021,
+      "buy_bb_width_min": 0.02,
+      "buy_ema_1h_diff": 0.009,
+      "buy_ema_fast": 10,
+      "buy_ema_slow": 42,
+      "buy_rsi_1h_max": 67,
+      "buy_rsi_1h_min": 42,
+      "buy_rsi_fast": 36,
+      "buy_rsi_slow": 41,
+      "buy_volume_factor": 1.989
+    },
+    "sell": {
+      "sell_macd_cross": false,
+      "sell_rsi": 71
+    },
+    "roi": {
+      "0": 0.077,
+      "40": 0.053,
+      "68": 0.02,
+      "150": 0
+    },
+    "stoploss": {
+      "stoploss": -0.242
+    },
+    "trailing": {
+      "trailing_stop": true,
+      "trailing_stop_positive": 0.35,
+      "trailing_stop_positive_offset": 0.375,
+      "trailing_only_offset_is_reached": true
+    }
+  },
+  "ft_stratparam_v": 1,
+  "export_time": "2026-03-09 01:34:04.862160+00:00"
+}

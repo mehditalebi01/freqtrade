@@ -1,0 +1,32 @@
+{
+  "strategy_name": "HybridNfiRpbVol_v1",
+  "params": {
+    "roi": {
+      "0": 0.03,
+      "30": 0.02,
+      "90": 0.01,
+      "240": 0
+    },
+    "stoploss": {
+      "stoploss": -0.09
+    },
+    "trailing": {
+      "trailing_stop": true,
+      "trailing_stop_positive": 0.012,
+      "trailing_stop_positive_offset": 0.025,
+      "trailing_only_offset_is_reached": true
+    },
+    "max_open_trades": {
+      "max_open_trades": 3
+    },
+    "buy": {
+      "buy_macd_hist": 2.809,
+      "buy_vwap_diff": 0.973
+    },
+    "sell": {
+      "sell_macd_cross": true
+    }
+  },
+  "ft_stratparam_v": 1,
+  "export_time": "2026-03-08 20:01:32.543809+00:00"
+}
